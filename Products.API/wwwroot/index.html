@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Products API Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f4ef; --surface:#ffffff; --ink:#14172b; --muted:#6b6f85; --line:#e4e1d8;
+  --brand:#4338ca; --brand-soft:#eceafd; --ok:#0f9d6b; --ok-soft:#dff6ec;
+  --warn:#c2410c; --warn-soft:#ffe9dc; --err:#be123c; --err-soft:#ffe3ea;
+  --code-bg:#12142a; --code-ink:#d7dbff;
+  --l-domain:#0f9d6b; --l-app:#4338ca; --l-infra:#c2410c; --l-api:#be185d;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1020; --surface:#171a30; --ink:#eef0ff; --muted:#9a9fc0; --line:#2a2e4d;
+    --brand:#8b84ff; --brand-soft:#232650; --ok:#34d399; --ok-soft:#10382d;
+    --warn:#fb923c; --warn-soft:#41230f; --err:#fb7185; --err-soft:#46141f;
+    --code-bg:#0a0b17;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1020; --surface:#171a30; --ink:#eef0ff; --muted:#9a9fc0; --line:#2a2e4d;
+  --brand:#8b84ff; --brand-soft:#232650; --ok:#34d399; --ok-soft:#10382d;
+  --warn:#fb923c; --warn-soft:#41230f; --err:#fb7185; --err-soft:#46141f;
+  --code-bg:#0a0b17;
+}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:'Tajawal',system-ui,sans-serif;line-height:1.6;
+  background-image:radial-gradient(circle at 85% -10%,var(--brand-soft),transparent 45%)}
+.wrap{max-width:1120px;margin:0 auto;padding:0 16px 64px}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace;direction:ltr;unicode-bidi:isolate}
+header.top{gap:10px;flex-wrap:wrap;display:flex;justify-content:space-between;align-items:center;padding:20px 0}
+.logo{font-weight:800;font-size:18px;display:flex;align-items:center;gap:10px}
+.logo i{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--brand),#ec4899);display:inline-block}
+.pill{white-space:nowrap;font-size:12px;padding:5px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface);display:inline-flex;gap:8px;align-items:center;cursor:default}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--warn)}
+.dot.live{background:var(--ok)}
+.hero{padding:36px 0 28px}
+.hero h1{font-size:clamp(30px,5vw,52px);font-weight:800;line-height:1.2;letter-spacing:-.5px}
+.hero h1 span{background:linear-gradient(90deg,var(--brand),#ec4899);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--muted);max-width:620px;margin-top:12px;font-size:18px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:13px;padding:4px 12px;border-radius:8px;background:var(--surface);border:1px solid var(--line);font-weight:500}
+h2{font-size:24px;font-weight:800;margin:44px 0 6px}
+.sub{color:var(--muted);margin-bottom:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px}
+/* architecture */
+.layers{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.layer{position:relative;border:1px solid var(--line);background:var(--surface);border-radius:18px;padding:18px 18px 16px;transition:.25s;overflow:hidden}
+.layer::before{content:"";position:absolute;inset-inline:0;top:0;height:5px;background:var(--c)}
+.layer h3{font-size:18px;margin-bottom:2px}
+.layer small{color:var(--muted);display:block;margin-bottom:10px}
+.layer ul{list-style:none;padding:0;font-size:13px;display:grid;gap:4px}
+.layer li{background:var(--bg);padding:3px 9px;border-radius:7px;width:fit-content}
+.layer.active{transform:translateY(-4px);box-shadow:0 10px 30px -12px var(--c);border-color:var(--c)}
+.layer .step{position:absolute;inset-inline-end:14px;top:16px;width:26px;height:26px;border-radius:50%;background:var(--c);color:#fff;
+  font-size:13px;font-weight:700;display:grid;place-items:center;opacity:0;transform:scale(.4);transition:.25s}
+.layer.active .step{opacity:1;transform:none}
+.deps{margin-top:14px;font-size:14px;color:var(--muted)}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:16px;font-size:13px}
+.flow b{padding:5px 11px;border-radius:99px;background:var(--bg);border:1px solid var(--line);font-weight:500;transition:.2s}
+.flow b.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.flow em{color:var(--muted);font-style:normal}
+/* playground */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.tab{border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:8px 14px;border-radius:10px;cursor:pointer;font:inherit;font-size:14px;display:flex;gap:8px;align-items:center}
+.tab.sel{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.m{font-size:11px;font-weight:700;padding:1px 6px;border-radius:5px}
+.m.get{background:var(--ok-soft);color:var(--ok)}.m.post{background:var(--warn-soft);color:var(--warn)}
+label{display:block;font-size:14px;font-weight:500;margin:12px 0 5px}
+input,select{width:100%;padding:11px 13px;border-radius:11px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+input:focus,select:focus{outline:2px solid var(--brand);outline-offset:1px}
+.btn{margin-top:16px;width:100%;padding:12px;border:0;border-radius:12px;background:var(--brand);color:#fff;font:inherit;font-weight:700;cursor:pointer;transition:.15s}
+.btn:hover{filter:brightness(1.1)}.btn:active{transform:scale(.98)}
+.hint{font-size:13px;color:var(--muted);margin-top:10px}
+.endpoint{display:flex;gap:10px;align-items:center;font-size:14px;margin-bottom:6px;padding:9px 12px;background:var(--bg);border-radius:10px}
+.console{background:var(--code-bg);color:var(--code-ink);border-radius:14px;padding:14px;font-size:13px;min-height:260px;max-height:360px;overflow:auto;white-space:pre-wrap;word-break:break-word}
+.status{display:inline-block;padding:1px 9px;border-radius:6px;font-weight:700;font-size:12px;margin-bottom:8px}
+.s2{background:#0f9d6b33;color:#34d399}.s4{background:#be123c33;color:#fb7185}
+.ph{color:#7c82b0}
+/* table */
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{text-align:start;color:var(--muted);font-weight:500;font-size:13px;padding:8px 10px;border-bottom:1px solid var(--line)}
+td{padding:11px 10px;border-bottom:1px solid var(--line)}
+tr:last-child td{border:0}
+tbody tr{cursor:pointer;transition:.15s}tbody tr:hover{background:var(--brand-soft)}
+.price{font-weight:700}
+.empty{text-align:center;color:var(--muted);padding:26px}
+.err{color:var(--err);font-size:13px;margin-top:4px}
+.mode{display:flex;gap:6px;align-items:center}
+.switch{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:5px 12px;border-radius:99px;font:inherit;font-size:13px;cursor:pointer}
+.logs{background:var(--code-bg);border-radius:14px;padding:6px 0;max-height:340px;overflow:auto;font-size:12.5px}
+.log{display:grid;grid-template-columns:70px 52px 150px 1fr;gap:10px;padding:5px 14px;color:var(--code-ink);align-items:baseline}
+.log:hover{background:#ffffff0d}
+.log .t{color:#7c82b0}.log .src{color:#a5a9d6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lv{font-weight:700}.lv.Information{color:#34d399}.lv.Warning{color:#fbbf24}.lv.Error,.lv.Fatal{color:#fb7185}.lv.Debug{color:#7c82b0}
+.log.new{animation:flash 1.2s}
+@keyframes flash{from{background:#8b84ff40}to{background:transparent}}
+@media(max-width:620px){.log{grid-template-columns:1fr;gap:0}}
+.logbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;flex-wrap:wrap}
+.logbar .filters{display:flex;gap:6px}
+footer{margin-top:50px;text-align:center;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="logo"><i></i> Products API</div>
+    <div class="mode">
+      <span class="pill" id="modePill"><span class="dot" id="dot"></span><span id="modeTxt">جارٍ الفحص...</span></span>
+      <a class="switch" href="employees.html" style="text-decoration:none">Employees</a>
+      <button class="switch" id="themeBtn" aria-label="تبديل الثيم">◐</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <h1>واجهة <span>Clean Architecture</span><br>و CQRS على أرض الواقع</h1>
+    <p>جرّب الـ endpoints الثلاثة وشاهد كل طلب وهو يمر عبر طبقات المشروع: من الـ Controller إلى Validation ثم الـ Handler وقاعدة البيانات.</p>
+    <div class="chips"><span class="chip mono">.NET 10</span><span class="chip mono">MediatR</span><span class="chip mono">FluentValidation</span><span class="chip mono">EF Core</span><span class="chip mono">SQL Server</span></div>
+  </section>
+
+  <h2>معمارية المشروع</h2>
+  <p class="sub">الاعتماديات تتجه للداخل دائماً: الـ Domain لا يعرف أي طبقة أخرى.</p>
+  <div class="layers" id="layers">
+    <div class="layer" id="L-api" style="--c:var(--l-api)"><span class="step"></span><h3>API</h3><small>Presentation</small>
+      <ul class="mono"><li>ProductsController</li><li>ExceptionMiddleware</li><li>Program.cs</li></ul></div>
+    <div class="layer" id="L-app" style="--c:var(--l-app)"><span class="step"></span><h3>Application</h3><small>CQRS + Validation</small>
+      <ul class="mono"><li>CreateProductCommand</li><li>GetProductsQuery</li><li>GetProductByIdQuery</li><li>ProductDto · Validator</li></ul></div>
+    <div class="layer" id="L-infra" style="--c:var(--l-infra)"><span class="step"></span><h3>Infrastructure</h3><small>EF Core + SQL Server</small>
+      <ul class="mono"><li>AppDbContext</li><li>ProductRepository</li></ul></div>
+    <div class="layer" id="L-domain" style="--c:var(--l-domain)"><span class="step"></span><h3>Domain</h3><small>Core</small>
+      <ul class="mono"><li>Product (Id, Name, Price)</li></ul></div>
+  </div>
+  <div class="flow" id="flow"></div>
+
+  <h2>جرّب الـ API</h2>
+  <p class="sub">اختر endpoint، أرسل الطلب، وراقب الاستجابة ومسار الطلب في الأعلى.</p>
+  <div class="grid2">
+    <div class="card">
+      <div class="tabs" id="tabs">
+        <button class="tab sel" data-t="list"><span class="m get mono">GET</span>الكل</button>
+        <button class="tab" data-t="one"><span class="m get mono">GET</span>بالـ Id</button>
+        <button class="tab" data-t="create"><span class="m post mono">POST</span>إنشاء</button>
+      </div>
+      <div id="p-list">
+        <div class="endpoint mono">GET /api/products</div>
+        <p class="hint">يرجع كل المنتجات عبر <span class="mono">GetProductsQuery</span>.</p>
+        <button class="btn" data-go="list">إرسال الطلب</button>
+      </div>
+      <div id="p-one" hidden>
+        <div class="endpoint mono">GET /api/products/{id}</div>
+        <label for="idIn">معرّف المنتج (Guid)</label>
+        <input id="idIn" class="mono" placeholder="اضغط على صف في الجدول أو الصق Id">
+        <p class="hint">إذا لم يوجد المنتج ترجع 404 من <span class="mono">NotFoundException</span>.</p>
+        <button class="btn" data-go="one">إرسال الطلب</button>
+      </div>
+      <div id="p-create" hidden>
+        <div class="endpoint mono">POST /api/products</div>
+        <label for="nameIn">اسم المنتج</label>
+        <input id="nameIn" placeholder="مثال: لابتوب">
+        <label for="priceIn">السعر</label>
+        <input id="priceIn" type="number" step="0.01" placeholder="0.00" class="mono">
+        <p class="hint">جرّب ترك الاسم فارغاً أو سعراً ≤ 0 لترى Validation يرد بـ 400.</p>
+        <button class="btn" data-go="create">إرسال الطلب</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="console mono" id="console"><span class="ph">// ستظهر الاستجابة هنا</span></div>
+    </div>
+  </div>
+
+  <h2>المنتجات</h2>
+  <p class="sub">اضغط على أي صف لتعبئة الـ Id في تبويب GET بالـ Id.</p>
+  <div class="card">
+    <table><thead><tr><th>الاسم</th><th>السعر</th><th>Id</th></tr></thead><tbody id="rows"></tbody></table>
+  </div>
+
+  <h2>سجل الأحداث (Logging)</h2>
+  <p class="sub">أحداث Serilog / ILogger لحظة بلحظة. تُكتب أيضاً في الـ console وفي ملفات <span class="mono">logs/products-YYYYMMDD.log</span>.</p>
+  <div class="card">
+    <div class="logbar">
+      <div class="filters" id="lvFilters">
+        <button class="tab sel" data-lv="all">الكل</button>
+        <button class="tab" data-lv="Information">Info</button>
+        <button class="tab" data-lv="Warning">Warning</button>
+        <button class="tab" data-lv="Error">Error</button>
+      </div>
+      <button class="switch" id="clearLogs">مسح العرض</button>
+    </div>
+    <div class="logs mono" id="logs"></div>
+  </div>
+
+  <footer>Products API · Clean Architecture & CQRS</footer>
+</div>
+
+<script>
+// When the page is opened as a file (not served by the API), talk to the API on its dev port.
+const API=location.protocol.startsWith('http')?'':'http://localhost:5020';
+const $=s=>document.querySelector(s), sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let live=false, mem=[];
+const uid=()=>crypto.randomUUID();
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const money=n=>Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+/* ---- flow animation ---- */
+const FLOW={
+  list:[['api','Controller'],['app','Mediator'],['app','GetProductsQueryHandler'],['infra','Repository'],['infra','SQL Server']],
+  one:[['api','Controller'],['app','Mediator'],['app','GetProductByIdHandler'],['infra','Repository'],['infra','SQL Server']],
+  create:[['api','Controller'],['app','Mediator'],['app','ValidationBehavior'],['app','CreateProductHandler'],['domain','new Product()'],['infra','Repository'],['infra','SQL Server']]
+};
+function drawFlow(kind,on=-1){
+  $('#flow').innerHTML=FLOW[kind].map((s,i)=>`<b class="${i<=on?'on':''}">${s[1]}</b>`).join('<em>←</em>');
+}
+async function animate(kind,stopAt){
+  const steps=FLOW[kind], used=new Map();
+  document.querySelectorAll('.layer').forEach(l=>{l.classList.remove('active')});
+  const end=stopAt??steps.length-1;
+  for(let i=0;i<=end;i++){
+    drawFlow(kind,i);
+    const L=$('#L-'+steps[i][0]);
+    if(!used.has(L)){used.set(L,used.size+1);L.querySelector('.step').textContent=used.size;L.classList.add('active')}
+    await sleep(170);
+  }
+}
+
+/* ---- backend: real or in-memory ---- */
+async function call(method,path,body){
+  if(live){
+    const r=await fetch(API+path,{method,headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+    let data=null;try{data=await r.json()}catch{}
+    return{status:r.status,data};
+  }
+  return demo(method,path,body);
+}
+function demo(method,path,body){
+  if(method==='GET'&&path==='/api/products'){
+    pushLog('Information','LoggingBehavior','Handling GetProductsQuery');
+    pushLog('Information','GetProductsQueryHandler',`Retrieved ${mem.length} products`);
+    return{status:200,data:[...mem]};
+  }
+  if(method==='GET'){
+    const id=path.split('/').pop(),p=mem.find(x=>x.id===id);
+    pushLog('Information','LoggingBehavior',`Handling GetProductByIdQuery { Id: ${id} }`);
+    if(p)return{status:200,data:p};
+    pushLog('Warning','GetProductByIdQueryHandler',`Product ${id} was not found`);
+    return{status:404,data:{status:404,title:`Product ${id} was not found.`}};
+  }
+  pushLog('Information','LoggingBehavior',`Handling CreateProductCommand { Name: ${body.name}, Price: ${body.price} }`);
+  const errors={};
+  if(!body.name||!String(body.name).trim())errors.Name=["'Name' must not be empty."];
+  else if(body.name.length>200)errors.Name=["The length of 'Name' must be 200 characters or fewer."];
+  if(!(Number(body.price)>0))errors.Price=["'Price' must be greater than '0'."];
+  if(Object.keys(errors).length){pushLog('Warning','ExceptionHandlingMiddleware','Validation failed: '+Object.values(errors).flat().join('; '));return{status:400,data:{status:400,errors}};}
+  const p={id:uid(),name:body.name,price:Number(body.price)};mem.push(p);
+  pushLog('Information','CreateProductCommandHandler',`Product created with Id ${p.id}, Name ${p.name}, Price ${p.price}`);
+  return{status:201,data:p};
+}
+
+/* ---- ui ---- */
+function show(res,method,path){
+  const cls=res.status<300?'s2':'s4';
+  $('#console').innerHTML=`<span class="status ${cls}">${res.status}</span> <span class="ph">${method} ${esc(path)}</span>\n\n${esc(JSON.stringify(res.data,null,2))}`;
+}
+async function refresh(){
+  const r=await call('GET','/api/products');
+  const rows=r.data||[];
+  $('#rows').innerHTML=rows.length?rows.map(p=>`<tr data-id="${p.id}"><td>${esc(p.name)}</td><td class="price mono">${money(p.price)}</td><td class="mono" style="color:var(--muted);font-size:12px">${p.id}</td></tr>`).join('')
+    :'<tr><td colspan="3" class="empty">لا توجد منتجات بعد، أنشئ أول منتج من تبويب POST</td></tr>';
+}
+async function run(kind){
+  let method='GET',path='/api/products',body;
+  if(kind==='one'){const id=$('#idIn').value.trim();path='/api/products/'+(id||'00000000-0000-0000-0000-000000000000')}
+  if(kind==='create'){method='POST';body={name:$('#nameIn').value,price:parseFloat($('#priceIn').value)};if(isNaN(body.price))body.price=0}
+  const res=await call(method,path,body);
+  // stop animation at validation step if it failed validation
+  await animate(kind, res.status===400?2:undefined);
+  show(res,method,path);
+  if(kind==='create'&&res.status===201){$('#nameIn').value='';$('#priceIn').value=''}
+  refresh();
+}
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>run(b.dataset.go));
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('sel',x===t));
+  ['list','one','create'].forEach(k=>$('#p-'+k).hidden=k!==t.dataset.t);
+  drawFlow(t.dataset.t);
+});
+$('#rows').onclick=e=>{const tr=e.target.closest('tr[data-id]');if(!tr)return;
+  $('#idIn').value=tr.dataset.id;document.querySelector('[data-t=one]').click();};
+$('#themeBtn').onclick=()=>{
+  const dark=getComputedStyle(document.body).backgroundColor==='rgb(14, 16, 32)';
+  document.documentElement.dataset.theme=dark?'light':'dark';
+};
+
+/* ---- logs ---- */
+let lastLog=0, logRows=[], lvFilter='all';
+function renderLogs(fresh=0){
+  const rows=logRows.filter(l=>lvFilter==='all'||l.level===lvFilter);
+  $('#logs').innerHTML=rows.length?rows.slice(-120).map((l,i,a)=>
+    `<div class="log ${i>=a.length-fresh?'new':''}"><span class="t">${new Date(l.timestamp).toLocaleTimeString('en-GB')}</span><span class="lv ${l.level}">${l.level.slice(0,4).toUpperCase()}</span><span class="src">${esc(l.source)}</span><span>${esc(l.message)}</span></div>`).join('')
+    :'<div class="empty" style="font-family:Tajawal">لا توجد أحداث بعد</div>';
+  const box=$('#logs');box.scrollTop=box.scrollHeight;
+}
+function pushLog(level,source,message){logRows.push({id:++lastLog,timestamp:new Date().toISOString(),level,source,message});renderLogs(1)}
+async function pollLogs(){
+  if(!live)return;
+  try{
+    const r=await fetch(API+'/api/logs?after='+lastLog);
+    const items=await r.json();
+    if(items.length){logRows.push(...items);lastLog=items[items.length-1].id;renderLogs(items.length)}
+  }catch{}
+}
+document.querySelectorAll('#lvFilters .tab').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#lvFilters .tab').forEach(x=>x.classList.toggle('sel',x===b));
+  lvFilter=b.dataset.lv;renderLogs();
+});
+$('#clearLogs').onclick=()=>{logRows=[];renderLogs()};
+
+/* ---- boot ---- */
+(async()=>{
+  try{const r=await fetch(API+'/api/products',{signal:AbortSignal.timeout(3000)});live=r.ok}catch{live=false}
+  $('#dot').classList.toggle('live',live);
+  $('#modeTxt').textContent=live?'API حقيقي':'وضع تجريبي';
+  $('#modePill').title=live?'':'بيانات في الذاكرة. شغّل Products.API وافتح هذه الصفحة من خادمه للاتصال بقاعدة البيانات';
+  if(!live)mem=[['Laptop',1499],['Wireless Headphones',89.9],['Mechanical Keyboard',45],['Gaming Mouse',29.99],['27" Monitor',329.5],['USB-C Hub',24.75],['Webcam HD',59],['External SSD 1TB',119.99]].map(([name,price])=>({id:uid(),name,price}));
+  drawFlow('list');refresh();renderLogs();if(live){await pollLogs();setInterval(pollLogs,1500)}
+})();
+</script>
+</body>
+</html>

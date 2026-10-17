@@ -1,0 +1,4 @@
+C:\Users\P_Tech\ProductApI.Net\Products.API\wwwroot\index.html
+C:\Users\P_Tech\ProductApI.Net\Products.API\wwwroot\employees.html
+wwwroot\employees.html
+wwwroot\index.html
